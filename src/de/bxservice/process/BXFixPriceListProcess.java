@@ -48,7 +48,8 @@ public class BXFixPriceListProcess extends SvrProcess{
 		sql.append("SELECT condition.M_Product_ID, condition.M_PriceList_ID, version.M_PriceList_Version_ID, condition.amount "
 				+ " FROM BAY_Condition condition, M_PriceList_Version version ");
 		StringBuilder whereClause = new StringBuilder();
-		whereClause.append("WHERE condition.BAY_ConditionStage_ID = (SELECT BAY_ConditionStage_ID FROM BAY_ConditionStage WHERE value like 'SalesPriceList') "
+		whereClause.append("WHERE condition.BAY_ConditionStage_ID = (SELECT BAY_ConditionStage_ID FROM BAY_ConditionStage WHERE value like 'SalesPriceList'"
+																	+ " AND AD_CLIENT_ID = ? AND AD_ORG_ID= ?) "
 				+ "AND condition.isActive = 'Y' "
 				+ "AND condition.M_PriceList_ID IS NOT NULL "
 				+ "AND condition.DateFrom >= ? "
@@ -64,7 +65,9 @@ public class BXFixPriceListProcess extends SvrProcess{
 		
 		try {
 			pstmt = DB.prepareStatement(sql.toString(), get_TrxName());
-			pstmt.setTimestamp(1, p_DateFrom);
+			pstmt.setInt(1, Env.getAD_Client_ID(Env.getCtx()) );
+			pstmt.setInt(2, Env.getAD_Org_ID(Env.getCtx()) );
+			pstmt.setTimestamp(3, p_DateFrom);
 			rs = pstmt.executeQuery();
 			while (rs.next()) {
 				Integer productId = rs.getInt(1);
